@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kurban | TOPALLAR ÇİFTLİĞİ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <a href="index.html" class="logo">
+    <img src="img/logo.jpg" alt="Topallar Çiftliği logosu">
+    </a>
+    <h1>TOPALLAR ÇİFTLİĞİ</h1>
+    <nav>
+      <a href="index.html">Ana Sayfa</a>
+      <a href="hakkimizda.html">Hakkımızda</a>
+      <a href="hayvanlarimiz.html">Hayvanlarımız</a>
+      <a href="kurban.html">Kurban</a>
+      <a href="iletisim.html">İletişim</a>
+    </nav>
+  </header>
+<main>
+  <section>
+    <h2>Kurbanlıklarımız</h2>
+
+    <div class="filtre-bar">
+      <label>
+        Hisse başına kg
+        <select id="hisse-kilo">
+          <option value="hepsi">Hepsi</option>
+          <option value="20-25">20-25 Kg</option>
+          <option value="26-30">26-30 Kg</option>
+          <option value="31-35">31-35 Kg</option>
+        </select>
+      </label>
+
+      <label>
+        <input type="checkbox" id="satilanlari-gizle">
+        Satılanları Gizle
+      </label>
+    </div>
+
+    <p id="sonuc-yok" hidden>Bu kilo aralığında hayvan bulunamadı. Lütfen bizi arayın, size uygun hayvanı birlikte bulalım.</p>
+
+  <div class="kurbanliklar" id="kartlar"></div>
+  </section>
+</main>
+         
+        
+  
+       
+
+  <footer>
+    <p>&copy; 2026 Topallar Çiftliği</p>
+    <p>Hazırlayan: Ayşegül Topal · MIS 233 dönem projesi</p>
+  </footer>
+ 
+<script src="kurban.js"></script>
+</body>
+</html>

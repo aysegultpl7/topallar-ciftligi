@@ -69,6 +69,15 @@ Diğer komutlar:
 
 Örnek: `/api/hayvanlar?sadeceBos=1&hisseKgMin=30`
 
+## Yönetici önizleme sayfası
+
+`/onizleme.html?anahtar=...` adresinde Google Sheets'teki tüm satırlar ve **atlanan bozuk satırlar nedenleriyle birlikte** görünür. Tablo düzenlenirken hataları görmek için yapıldı. Sayfa gizli bir anahtarla korunur:
+
+- Anahtar `ONIZLEME_ANAHTAR` ortam değişkeninde tutulur (`.env` ve Render), depoda yoktur.
+- Değişken tanımlı değilse ya da anahtar yanlışsa sunucu 404 döner, veri gönderilmez.
+- Sayfa arama motorlarına kapalıdır (`noindex`).
+- Tablodaki yazılar sayfaya `textContent` ile basılır, HTML olarak çalışamaz.
+
 ## Hata durumlarında davranış
 
 - **Tablo okunamazsa:** önbellekte veri varsa onunla devam eder, yoksa HTTP 502 ve anlaşılır bir hata mesajı döner. Sunucu çökmez.

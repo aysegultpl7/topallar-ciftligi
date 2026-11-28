@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Önizleme | TOPALLAR ÇİFTLİĞİ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .tablo-kutu { overflow-x: auto; }
+    .tablo-kutu table { border-collapse: collapse; width: 100%; background: white; border-radius: 8px; }
+    .tablo-kutu th, .tablo-kutu td { padding: 8px 10px; border-bottom: 1px solid #ddd; text-align: left; font-size: 0.95rem; vertical-align: top; }
+    .tablo-kutu th { background: var(--lacivert); color: white; }
+    .hata-yazi { color: #9b1c1c; font-weight: 700; }
+    .tamam-yazi { color: #1b6b32; font-weight: 700; }
+    #yenile { font: inherit; padding: 10px 18px; border: 0; border-radius: 10px; background: var(--lacivert); color: white; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="index.html" class="logo">
+    <img src="img/logo.jpg" alt="Topallar Çiftliği logosu">
+    </a>
+    <h1>TOPALLAR ÇİFTLİĞİ</h1>
+    <nav>
+      <a href="index.html">Ana Sayfa</a>
+      <a href="hakkimizda.html">Hakkımızda</a>
+      <a href="hayvanlarimiz.html">Hayvanlarımız</a>
+      <a href="kurban.html">Kurban</a>
+      <a href="iletisim.html">İletişim</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>Tablo Önizlemesi</h2>
+    <p>Google Sheets'teki satırların siteye nasıl yansıdığını ve atlanan bozuk satırları gösterir.</p>
+    <p><button id="yenile" type="button">Tabloyu yeniden oku</button></p>
+    <p id="durum" role="status"></p>
+
+    <section id="atlanan-bolum" hidden>
+      <h3>Atlanan satırlar</h3>
+      <div class="tablo-kutu" id="atlanan-tablo"></div>
+    </section>
+
+    <section id="gecerli-bolum" hidden>
+      <h3>Sitede görünen satırlar</h3>
+      <div class="tablo-kutu" id="gecerli-tablo"></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 Topallar Çiftliği</p>
+    <p>Hazırlayan: Ayşegül Topal · MIS 233 dönem projesi</p>
+  </footer>
+
+<script>
+  const anahtar = new URLSearchParams(location.search).get("anahtar") || "";
+  const durum = document.getElementById("durum");
+  const atlananBolum = document.getElementById("atlanan-bolum");
+  const gecerliBolum = document.getElementById("gecerli-bolum");
+
+  // Tablo oluşturur. Hücrelere textContent yazılır, böylece tablodaki
+  // yazılar HTML olarak çalışamaz.
+  function tabloYap(basliklar, satirlar) {
+    const tablo = document.createElement("table");
+    const ust = document.createElement("tr");
+    basliklar.forEach((b) => {
+      const th = document.createElement("th");
+      th.textContent = b;
+      ust.appendChild(th);
+    });
+    tablo.appendChild(ust);
+    satirlar.forEach((satir) => {
+      const tr = document.createElement("tr");
+      satir.forEach((hucre) => {
+        const td = document.createElement("td");
+        td.textContent = String(hucre);
+        tr.appendChild(td);
+      });
+      tablo.appendChild(tr);
+    });
+    return tablo;
+  }
+
+  function goster(veri) {
+    const saat = new Date(veri.okumaZamani).toLocaleTimeString("tr-TR");
+    durum.textContent =
+      "Toplam " + veri.toplamSatir + " satır okundu: " +
+      veri.hisseler.length + " geçerli, " +
+      veri.atlananlar.length + " atlandı. (Okuma saati: " + saat + ")";
+    durum.className = veri.atlananlar.length > 0 ? "hata-yazi" : "tamam-yazi";
+
+    const atlananKutu = document.getElementById("atlanan-tablo");
+    atlananKutu.replaceChildren();
+    if (veri.atlananlar.length > 0) {
+      atlananKutu.appendChild(tabloYap(
+        ["Tablo satırı", "Neden atlandı", "Satırın içeriği"],
+        veri.atlananlar.map((a) => [a.tabloSatiri, a.neden, JSON.stringify(a.satir)])
+      ));
+    }
+    atlananBolum.hidden = veri.atlananlar.length === 0;
+
+    const gecerliKutu = document.getElementById("gecerli-tablo");
+    gecerliKutu.replaceChildren();
+    gecerliKutu.appendChild(tabloYap(
+      ["Sırt No", "Cins", "Canlı kilo", "Karkas", "Boş hisse", "Fotoğraf"],
+      veri.hisseler.map((h) => [
+        h.sirtNo,
+        h.cins,
+        h.canliMin + "-" + h.canliMax,
+        h.karkasMin + "-" + h.karkasMax,
+        h.bosHisse + " / " + h.hisseToplam,
+        h.foto,
+      ])
+    ));
+    gecerliBolum.hidden = false;
+  }
+
+  async function yukle() {
+    durum.className = "";
+    durum.textContent = "Tablo okunuyor...";
+    try {
+      const cevap = await fetch(
+        "/api/onizleme?yenile=1&anahtar=" + encodeURIComponent(anahtar)
+      );
+      if (cevap.status === 404) {
+        durum.textContent = "Bu sayfaya erişim yok. Adresin sonunda doğru ?anahtar=... olmalı.";
+        return;
+      }
+      if (!cevap.ok) {
+        durum.textContent = "Tablo şu an okunamıyor.";
+        return;
+      }
+      goster(await cevap.json());
+    } catch (hata) {
+      durum.textContent = "Sunucuya ulaşılamadı.";
+    }
+  }
+
+  document.getElementById("yenile").addEventListener("click", yukle);
+  yukle();
+</script>
+</body>
+</html>

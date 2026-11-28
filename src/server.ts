@@ -6,7 +6,7 @@ import {
   Hisse,
   Satir,
   eksikSutunlar,
-  satirdanHisse,
+  satiriDogrula,
   filtrele,
   filtreyiOku,
 } from "./hisse";
@@ -23,13 +23,27 @@ function ortamDegiskeni(ad: string): string {
 const TABLO_URL = ortamDegiskeni("TABLO_URL");
 const PORT = Number(process.env.PORT) || 3000;
 const BEKLEME_MS = 60 * 1000;
+// Önizleme sayfasının gizli anahtarı. Tanımlı değilse sayfa kapalı kalır.
+const ONIZLEME_ANAHTAR = process.env.ONIZLEME_ANAHTAR;
 
-let onbellek: Hisse[] | null = null;
-let sonOkuma = 0;
+type Atlanan = {
+  tabloSatiri: number; // Google Sheets'teki satır numarası (başlık 1. satır)
+  neden: string;
+  satir: Satir;
+};
 
-async function tablodanOku(): Promise<Hisse[]> {
+type Okuma = {
+  hisseler: Hisse[];
+  atlananlar: Atlanan[];
+  toplamSatir: number;
+  okumaZamani: number;
+};
+
+let onbellek: Okuma | null = null;
+
+async function tablodanOku(zorla = false): Promise<Okuma> {
   const simdi = Date.now();
-  if (onbellek && simdi - sonOkuma < BEKLEME_MS) {
+  if (!zorla && onbellek && simdi - onbellek.okumaZamani < BEKLEME_MS) {
     return onbellek;
   }
 
@@ -46,18 +60,24 @@ async function tablodanOku(): Promise<Hisse[]> {
   }
 
   const hisseler: Hisse[] = [];
+  const atlananlar: Atlanan[] = [];
   sonuc.data.forEach((satir, i) => {
-    const hisse = satirdanHisse(satir);
-    if (hisse === null) {
-      console.warn("Bozuk satır atlandı (tablo satırı " + (i + 2) + "):", satir);
+    const dogrulama = satiriDogrula(satir);
+    if ("hisse" in dogrulama) {
+      hisseler.push(dogrulama.hisse);
     } else {
-      hisseler.push(hisse);
+      console.warn("Bozuk satır atlandı (tablo satırı " + (i + 2) + "):", dogrulama.hata);
+      atlananlar.push({ tabloSatiri: i + 2, neden: dogrulama.hata, satir });
     }
   });
 
-  onbellek = hisseler;
-  sonOkuma = simdi;
-  return hisseler;
+  onbellek = {
+    hisseler,
+    atlananlar,
+    toplamSatir: sonuc.data.length,
+    okumaZamani: simdi,
+  };
+  return onbellek;
 }
 
 const app = express();
@@ -66,15 +86,31 @@ app.use(express.static(path.join(__dirname, "..", "public")));
 app.get("/api/hayvanlar", async (req: Request, res: Response) => {
   const filtre = filtreyiOku(req.query);
   try {
-    const hisseler = await tablodanOku();
-    res.json(filtrele(hisseler, filtre));
+    const okuma = await tablodanOku();
+    res.json(filtrele(okuma.hisseler, filtre));
   } catch (hata) {
     console.error("Tablo hatası:", hata);
     if (onbellek) {
-      res.json(filtrele(onbellek, filtre));
+      res.json(filtrele(onbellek.hisseler, filtre));
       return;
     }
     res.status(502).json({ hata: "Veriler şu an alınamıyor" });
+  }
+});
+
+// Yönetici önizlemesi: tablodaki satırlar ve atlanan bozuk satırlar.
+// Adres: /api/onizleme?anahtar=...  (&yenile=1 önbelleği atlar)
+app.get("/api/onizleme", async (req: Request, res: Response) => {
+  if (!ONIZLEME_ANAHTAR || req.query.anahtar !== ONIZLEME_ANAHTAR) {
+    res.status(404).json({ hata: "Bulunamadı" });
+    return;
+  }
+  try {
+    const okuma = await tablodanOku(req.query.yenile === "1");
+    res.json(okuma);
+  } catch (hata) {
+    console.error("Önizleme tablo hatası:", hata);
+    res.status(502).json({ hata: "Tablo şu an okunamıyor" });
   }
 });
 

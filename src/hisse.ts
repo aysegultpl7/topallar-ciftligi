@@ -33,8 +33,11 @@ function sayi(deger: string | undefined): number {
   return Number(deger);
 }
 
-// Bir CSV satırını doğrular. Bozuksa null döndürür.
-export function satirdanHisse(satir: Satir): Hisse | null {
+// Doğrulama sonucu: ya geçerli bir hisse ya da neden yazan bir hata
+export type Dogrulama = { hisse: Hisse } | { hata: string };
+
+// Bir CSV satırını doğrular. Bozuksa nedenini söyler.
+export function satiriDogrula(satir: Satir): Dogrulama {
   const hisse: Hisse = {
     id: sayi(satir.id),
     sirtNo: sayi(satir.sirtNo),
@@ -48,25 +51,40 @@ export function satirdanHisse(satir: Satir): Hisse | null {
     bosHisse: sayi(satir.bosHisse),
   };
 
-  const sayilar = [
-    hisse.id, hisse.sirtNo, hisse.canliMin, hisse.canliMax,
-    hisse.karkasMin, hisse.karkasMax, hisse.hisseToplam, hisse.bosHisse,
+  const sayiAlanlari: [string, number][] = [
+    ["id", hisse.id],
+    ["sirtNo", hisse.sirtNo],
+    ["canliMin", hisse.canliMin],
+    ["canliMax", hisse.canliMax],
+    ["karkasMin", hisse.karkasMin],
+    ["karkasMax", hisse.karkasMax],
+    ["hisseToplam", hisse.hisseToplam],
+    ["bosHisse", hisse.bosHisse],
   ];
-  if (sayilar.some((n) => !Number.isFinite(n))) {
-    return null;
+  const bozuk = sayiAlanlari.filter(([, n]) => !Number.isFinite(n)).map(([ad]) => ad);
+  if (bozuk.length > 0) {
+    return { hata: "Sayı olması gereken hücre boş ya da yazı: " + bozuk.join(", ") };
   }
-  if (hisse.cins === "" || hisse.foto === "") {
-    return null;
+  if (hisse.cins === "") {
+    return { hata: "cins hücresi boş" };
+  }
+  if (hisse.foto === "") {
+    return { hata: "foto hücresi boş" };
   }
   if (!Number.isInteger(hisse.hisseToplam) || hisse.hisseToplam <= 0) {
-    return null;
+    return { hata: "hisseToplam 1 veya daha büyük bir tam sayı olmalı" };
   }
   if (!Number.isInteger(hisse.bosHisse) || hisse.bosHisse < 0 || hisse.bosHisse > hisse.hisseToplam) {
-    return null;
+    return { hata: "bosHisse 0 ile hisseToplam arasında bir tam sayı olmalı" };
   }
-  return hisse;
+  return { hisse };
 }
 
+// Bir CSV satırını doğrular. Bozuksa null döndürür.
+export function satirdanHisse(satir: Satir): Hisse | null {
+  const sonuc = satiriDogrula(satir);
+  return "hisse" in sonuc ? sonuc.hisse : null;
+}
 
 // Sitede kullanılabilecek filtreler. Hepsi isteğe bağlıdır.
 export type Filtre = {

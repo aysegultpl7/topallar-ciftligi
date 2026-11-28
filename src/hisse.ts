@@ -88,13 +88,14 @@ export function satirdanHisse(satir: Satir): Hisse | null {
 
 // Sitede kullanılabilecek filtreler. Hepsi isteğe bağlıdır.
 export type Filtre = {
-  cins?: string;       // cinsin içinde geçen yazı (büyük/küçük harf fark etmez)
-  sadeceBos?: boolean; // true ise sadece boş hissesi olanlar
-  sirtNo?: number;     // tam eşleşen sırt no
-  kiloMin?: number;    // canlı kilosu en az bu değere ulaşabilen hayvanlar
-  kiloMax?: number;    // canlı kilosu en fazla bu değerden başlayanlar
-  hisseKgMin?: number; // hisse başı yaklaşık kilosu en az bu kadar olanlar
-  hisseKgMax?: number; // hisse başı yaklaşık kilosu en fazla bu kadar olanlar
+  cins?: string;          // cinsin içinde geçen yazı (büyük/küçük harf fark etmez)
+  sadeceBos?: boolean;    // true ise sadece boş hissesi olanlar
+  sirtNo?: number;        // tam eşleşen sırt no
+  enAzBosHisse?: number;  // en az bu kadar boş hissesi olanlar (örn. 2: 2 ve daha fazla)
+  kiloMin?: number;       // canlı kilosu en az bu değere ulaşabilen hayvanlar
+  kiloMax?: number;       // canlı kilosu en fazla bu değerden başlayanlar
+  hisseKgMin?: number;    // hisse başı yaklaşık kilosu en az bu kadar olanlar
+  hisseKgMax?: number;    // hisse başı yaklaşık kilosu en fazla bu kadar olanlar
 };
 
 // Bir hissenin yaklaşık kilosu: karkas ortalaması / hisse sayısı, yuvarlanmış
@@ -115,6 +116,9 @@ export function filtrele(hisseler: Hisse[], filtre: Filtre): Hisse[] {
       return false;
     }
     if (filtre.sirtNo !== undefined && h.sirtNo !== filtre.sirtNo) {
+      return false;
+    }
+    if (filtre.enAzBosHisse !== undefined && h.bosHisse < filtre.enAzBosHisse) {
       return false;
     }
     if (filtre.kiloMin !== undefined && h.canliMax < filtre.kiloMin) {
@@ -149,6 +153,7 @@ export function filtreyiOku(sorgu: Record<string, unknown>): Filtre {
     cins: cins === "" ? undefined : cins,
     sadeceBos: sorgu.sadeceBos === "1",
     sirtNo: sayiOku(sorgu.sirtNo),
+    enAzBosHisse: sayiOku(sorgu.enAzHisse),
     kiloMin: sayiOku(sorgu.kiloMin),
     kiloMax: sayiOku(sorgu.kiloMax),
     hisseKgMin: sayiOku(sorgu.hisseKgMin),

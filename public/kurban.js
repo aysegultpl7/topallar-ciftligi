@@ -1,3 +1,5 @@
+const aramaKutusu = document.getElementById("arama");
+const hisseAdedi = document.getElementById("hisse-adedi");
 const kiloSecim = document.getElementById("hisse-kilo");
 const kutu = document.getElementById("satilanlari-gizle");
 const kartAlani = document.getElementById("kartlar");
@@ -5,6 +7,17 @@ const sonucYok = document.getElementById("sonuc-yok");
 
 const TELEFON = "905052586957";
 let sonIstekNo = 0;
+let aramaZamanlayici;
+
+// Tablodan gelen yazıların HTML olarak çalışmasını engeller
+function kacis(metin) {
+  return String(metin)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
 
 // Bir hayvan için kartın HTML'ini üretir
 function kartHtml(h) {
@@ -15,13 +28,13 @@ function kartHtml(h) {
   return `
     <article class="kart" data-durum="${satildi ? "satildi" : "musait"}" data-hisse-kg="${hisseBasi}">
       <div class="kart-foto">
-        <img src="${h.foto}" alt="Sırt No ${h.sirtNo}">
+        <img src="${kacis(h.foto)}" alt="Sırt No ${h.sirtNo}">
         <span class="kilo-etiket">${h.canliMin}-${h.canliMax} Kg</span>
         ${satildi ? '<span class="satildi-serit">SATILDI</span>' : ""}
       </div>
       <div class="kart-icerik">
         <h3>Sırt No: ${h.sirtNo}</h3>
-        <p class="cins">${h.cins}</p>
+        <p class="cins">${kacis(h.cins)}</p>
         <div class="satir"><span>Canlı Kilo Aralığı:</span><span>${h.canliMin}-${h.canliMax} Kg</span></div>
         <div class="satir"><span>Karkas:</span><span>${h.karkasMin}-${h.karkasMax} Kg</span></div>
         <div class="satir"><span>Hisse Başı (yaklaşık):</span><span>${hisseBasi} Kg</span></div>
@@ -33,9 +46,22 @@ function kartHtml(h) {
   `;
 }
 
-// Seçili filtreleri adres parametrelerine çevirir (örn. sadeceBos=1&hisseKgMin=25)
+// Seçili filtreleri adres parametrelerine çevirir (örn. sirtNo=58&enAzHisse=2)
 function sorguOlustur() {
   const parametreler = new URLSearchParams();
+
+  const aranan = aramaKutusu.value.trim();
+  if (aranan !== "") {
+    if (/^\d+$/.test(aranan)) {
+      parametreler.set("sirtNo", aranan); // sadece rakam: sırt no
+    } else {
+      parametreler.set("cins", aranan); // yazı: cins içinde ara
+    }
+  }
+
+  if (hisseAdedi.value !== "") {
+    parametreler.set("enAzHisse", hisseAdedi.value);
+  }
 
   if (kutu.checked) {
     parametreler.set("sadeceBos", "1");
@@ -79,6 +105,13 @@ function hayvanlariYukle() {
 
 kutu.addEventListener("change", hayvanlariYukle);
 kiloSecim.addEventListener("change", hayvanlariYukle);
+hisseAdedi.addEventListener("change", hayvanlariYukle);
+
+// Yazmayı bitirince 0,3 saniye sonra ara (her harfte istek atmaz)
+aramaKutusu.addEventListener("input", function () {
+  clearTimeout(aramaZamanlayici);
+  aramaZamanlayici = setTimeout(hayvanlariYukle, 300);
+});
 
 // Sayfa açılınca veriyi sunucudan iste
 hayvanlariYukle();

@@ -540,3 +540,28 @@ footer p {
     grid-template-columns: 1fr;
   }
 }
+
+.filtre-bar input[type="search"] {
+  font: inherit;
+  padding: 8px 12px;
+  margin-left: 8px;
+  border: 2px solid var(--mavi);
+  border-radius: 10px;
+  background-color: white;
+  color: var(--lacivert);
+}
+
+@media (max-width: 600px) {
+  .filtre-bar label {
+    display: block;
+    width: 100%;
+  }
+
+  .filtre-bar input[type="search"],
+  .filtre-bar select {
+    display: block;
+    width: 100%;
+    margin: 6px 0 0;
+    box-sizing: border-box;
+  }
+}

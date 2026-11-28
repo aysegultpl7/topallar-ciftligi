@@ -24,11 +24,31 @@
       <a href="iletisim.html">İletişim</a>
     </nav>
   </header>
+
 <main>
   <section>
     <h2>Kurbanlıklarımız</h2>
 
-    <div class="filtre-bar">
+        <div class="filtre-bar">
+      <label>
+        Sırt No veya cins ara
+        <input type="search" id="arama" placeholder="Örn: 58 veya Yerli" autocomplete="off">
+      </label>
+
+      <label>
+        Almak istediğiniz hisse sayısı
+        <select id="hisse-adedi">
+          <option value="">Hepsi</option>
+          <option value="1">1 ve daha fazla</option>
+          <option value="2">2 ve daha fazla</option>
+          <option value="3">3 ve daha fazla</option>
+          <option value="4">4 ve daha fazla</option>
+          <option value="5">5 ve daha fazla</option>
+          <option value="6">6 ve daha fazla</option>
+          <option value="7">7 (tamamı boş)</option>
+        </select>
+      </label>
+
       <label>
         Hisse başına kg
         <select id="hisse-kilo">
@@ -45,21 +65,17 @@
       </label>
     </div>
 
-    <p id="sonuc-yok" hidden>Bu kilo aralığında hayvan bulunamadı. Lütfen bizi arayın, size uygun hayvanı birlikte bulalım.</p>
+    <p id="sonuc-yok" role="status" hidden>Aradığınız özelliklerde hayvan bulunamadı. Lütfen bizi arayın, size uygun hayvanı birlikte bulalım.</p>
 
-  <div class="kurbanliklar" id="kartlar"></div>
+    <div class="kurbanliklar" id="kartlar"></div>
   </section>
 </main>
-         
-        
-  
-       
 
   <footer>
     <p>&copy; 2026 Topallar Çiftliği</p>
     <p>Hazırlayan: Ayşegül Topal · MIS 233 dönem projesi</p>
   </footer>
- 
+
 <script src="kurban.js"></script>
 </body>
 </html>

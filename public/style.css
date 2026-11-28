@@ -565,3 +565,31 @@ footer p {
     box-sizing: border-box;
   }
 }
+/* Klavyeyle gezenler için seçili öğe belli olsun */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+summary:focus-visible,
+video:focus-visible {
+  outline: 3px solid var(--mavi);
+  outline-offset: 3px;
+}
+
+nav a:focus-visible {
+  outline-color: white;
+}
+
+/* Hareketi azaltmak isteyen kullanıcılar için animasyonları kapat */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+
+  .kart:hover,
+  .ozellik:hover,
+  .ciftlik-galeri img:hover {
+    transform: none;
+  }
+}

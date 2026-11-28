@@ -12,7 +12,7 @@ Kocaeli Köseköy'de (Kartepe) babamın işlettiği hayvancılık işletmesi iç
 
 - Ana sayfa, Hakkımızda, Hayvanlarımız, Kurban ve İletişim sayfaları
 - Fotoğraf galerileri (büyütme, ileri/geri gezinme) ve çiftlik videosu
-- **Kurban sayfası:** kurbanlıklar bir Google Sheets tablosundan canlı okunur. Filtreler: satılanları gizle, kilo aralığı, hisse başına et miktarı
+- **Kurban sayfası:** kurbanlıklar bir Google Sheets tablosundan canlı okunur. Sırt No / cins araması ve filtreler: satılanları gizle, almak istenen hisse sayısı ("2 ve daha fazla boş hissesi olanlar"), hisse başına et miktarı
 - Telefona uyumlu görünüm
 
 ## Kullanılan teknolojiler
@@ -66,6 +66,7 @@ Diğer komutlar:
 - `sirtNo=`, `cins=`
 - `kiloMin=`, `kiloMax=` canlı kilo aralığı
 - `hisseKgMin=`, `hisseKgMax=` hisse başına yaklaşık et (kg)
+- `enAzHisse=` en az bu kadar boş hissesi olanlar (örn. `enAzHisse=2`)
 
 Örnek: `/api/hayvanlar?sadeceBos=1&hisseKgMin=30`
 
